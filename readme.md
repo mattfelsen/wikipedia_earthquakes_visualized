@@ -9,3 +9,7 @@ php wikidump.php whatever-you-want.txt
 http://keyangxiang.com/projects.html?_ctl=project&_act=csv2json
 
 * world-map.html should show the locations, data-circles.html shoud show the data circle objects
+
+
+http://mattfelsen.com/projects/wikipedia-earthquakes-visualized
+http://mattfelsen.com/img/projects/wikipedia-earthquakes-visualized/wikipedia-earthquakes-visualized.jpg
