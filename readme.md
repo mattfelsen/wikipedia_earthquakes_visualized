@@ -12,4 +12,4 @@ http://keyangxiang.com/projects.html?_ctl=project&_act=csv2json
 
 
 http://mattfelsen.com/projects/wikipedia-earthquakes-visualized
-http://mattfelsen.com/img/projects/wikipedia-earthquakes-visualized/wikipedia-earthquakes-visualized.jpg
+!(http://mattfelsen.com/img/projects/wikipedia-earthquakes-visualized/wikipedia-earthquakes-visualized.jpg)
