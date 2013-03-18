@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+    background-color: #282828;
+}
+
+
+.land {
+  fill: #8E8E8E;
+  opacity: 0.22;
+}
+
+.boundary {
+  fill: none;
+  opacity: 0.22;
+  stroke: white;
+  stroke-width: 0.5px;
+}
+
+.marker {
+  fill: none;
+  stroke: #62CCB0;
+  stroke-width: 2;
+  opacity: 1;
+}
+.marker:hover {
+  fill: #62CCB0;
+  opacity: 0.6;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v0.min.js"></script>
+<script>
+
+var width = 1400;
+    height = 2000;
+
+// Most of this is based on this example
+// http://bl.ocks.org/mbostock/3757132
+// I'll add comments for what I can..
+
+// the projection converts lat/long coordinates to x/y coordinates for drawing in the svg
+// mercator is a common 2d representation of the world
+// See https://github.com/mbostock/d3/wiki/Geo-Projections
+// scale() by 1.1 makes it 10% bigger
+// translate() to width/2, height/2 moves the center of the map to the center of the svg
+var projection = d3.geo.mercator()
+    .scale(width * 1.1)
+    .translate([width / 2, height / 2]);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+
+// world-50m.json contains data with lat/long points of country borders (pulled from Mike's example)
+// Load it and bind its data to svg paths to draw all the country borders & land
+d3.json("json/world-50m.json", function(error, world) {
+    svg.insert("path")
+      .datum(topojson.object(world, world.objects.land))
+      .attr("class", "land")
+      .attr("d", path);
+
+  svg.insert("path")
+      .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
+      .attr("class", "boundary")
+      .attr("d", path);
+
+  // At this point, the world is drawn! I removed the graticule-related code, which draws a
+  // graticule over the world (graticule, I learned, is a fancy word for grid in the context of maps!)
+
+    // Now, load the earthquake json data. This was previously converted from the csv output from the
+    // PHP wikipedia script to JSON using an online convert. I think it was this one:
+    // http://keyangxiang.com/projects.html?_ctl=project&_act=csv2json
+    d3.json("json/earthquakes-20.json", function(data) {
+
+      // append a group with id="markers" for all the circle's we'll draw
+      var markers = svg.append('g')
+        .attr('id', 'markers');
+
+      // Bind the data from the svg and and for each data point, append a circle
+      // set radius to 0 (we'll animate it to the proper radius in a moment)
+      // set cx (x coordinate) to the x value from projection() (the first value at index 0)
+      // set cy (y coordinate) to the y value from projection() (the first value at index 1)
+      svg.selectAll('circle')
+        .data(data)
+        .enter()
+        .append('circle')
+            .attr('r', 0)
+            .attr('cx', function(d) { return projection([d.longitude, d.latitude])[0] })
+            .attr('cy', function(d) { return projection([d.longitude, d.latitude])[1] })
+            // add the css marker class, which does the styling with css in the browser
+            .attr('class', 'marker')
+
+            // not using this anymore, but this is svg styling. If trying to export the svg
+            // output from the browser to illustrator, this code needs to be un-commented
+            // .style('fill', 'cyan')
+            // .style('stroke', 'black')
+            // .style('stroke-width', 0.5)
+            // .style('opacity', 0.6)
+
+        // Now animate the circles so they grow to their proper radius size from 0    
+        .transition()
+            // the duration of each animation is 1 second (1000 milliseconds)
+            .duration(1000)
+            // each circle is delayed 300 milliseconds from the previous one
+            .delay(function(d, i) { return i * 300 })
+            // the radius is calculated from d.magnitude, which is the data bound
+            // from the json object. it's scaled by x40 - 10 to scale it to a different size
+            .attr('r', function(d) { return d.magnitude * 4 - 10 });
+
+        // The above code (bind data, append elements (like circles) as the data enters) is the
+        // preferred method for working with D3. The below method is more hacky and was commented
+        // out after I got some initial parts working
+
+        // for (var i = 0; i < 20; i++) {
+
+        //     var coords = projection([data[i]['longitude'], data[i]['latitude']]);
+
+        //     markers.append('circle')
+        //         .attr('cx', coords[0])
+        //         .attr('cy', coords[1])
+        //         .attr('r', data[i]['magnitude'] * 4 - 10)
+        //         .style('fill', 'lightblue')
+        //         .style('stroke', 'black')
+        //         .style('stroke-width', 0.5)
+        //         .style('opacity', 0.5);
+            
+        // }
+
+    });
+
+});
+
+
+
+d3.select(self.frameElement).style("height", height + "px");
+
+</script>
